@@ -3,27 +3,45 @@
 RAW_DIR="./raw"
 DEST_DIR="./packages"
 
-# Garante que o diretório de destino exista
 mkdir -p "$DEST_DIR"
 
-# Itera sobre os diretórios em RAW_DIR
-for dir in "$RAW_DIR"/*/; do
-  # Remove trailing slash e pega o nome do diretório
-  dir=${dir%*/}
-  dir_name=$(basename "$dir")
+for filepath in "$RAW_DIR"/*.tar.gz; do
+  [ -e "$filepath" ] || continue
 
-  # Caminho base de destino
-  current_path="$DEST_DIR"
+  filename=$(basename "$filepath")
+  base_name="${filename%.tar.gz}"
 
-  # Cria a estrutura m/e/u/d/i/r
-  for (( i=0; i<${#dir_name}; i++ )); do
-    letter="${dir_name:$i:1}"
-    current_path="$current_path/$letter"
-    mkdir -p "$current_path"
-  done
+  # Extrai nome e versão do padrão: nome-versão.tar.gz
+  package_name="${base_name%-*}"
+  version="${base_name##*-}"
 
-  # Move o diretório original para dentro do caminho final
-  mv "$RAW_DIR/$dir_name" "$current_path/$dir_name"
+  # Garante ao menos 4 caracteres
+  padded_name=$(printf "%-4s" "$package_name" | tr ' ' '_')
 
-  echo "Movido: $RAW_DIR/$dir_name -> $current_path/$dir_name"
+  prefix="${padded_name:0:2}"
+  middle="_${padded_name:2:1}"
+  final_dir="$package_name"
+  final_path="$DEST_DIR/$prefix/$middle/$final_dir"
+
+  mkdir -p "$final_path"
+
+  # Monta JSON
+  new_entry=$(jq -n \
+    --arg name "$package_name" \
+    --arg version "$version" \
+    --arg repository "https://github.com/lowcarboncode/phlow" \
+    '{name: $name, version: $version, repository: $repository}')
+
+  index_file="$final_path/index"
+
+  if [ -f "$index_file" ]; then
+    tmp=$(mktemp)
+    jq ". += [$new_entry]" "$index_file" > "$tmp" && mv "$tmp" "$index_file"
+  else
+    echo "[$new_entry]" > "$index_file"
+  fi
+
+  mv "$filepath" "$final_path/$filename"
+
+  echo "Movido e indexado: $filename -> $final_path/$filename"
 done
