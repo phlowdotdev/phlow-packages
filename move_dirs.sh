@@ -15,17 +15,26 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
   package_name="${base_name%-*}"
   version="${base_name##*-}"
 
-  # Garante ao menos 4 caracteres
-  padded_name=$(printf "%-4s" "$package_name" | tr ' ' '_')
+  # Padroniza nome com no mínimo 4 caracteres
+  padded_name="$package_name"
+  while [ ${#padded_name} -lt 4 ]; do
+    padded_name="${padded_name}_"
+  done
 
-  prefix="${padded_name:0:2}"
-  middle="_${padded_name:2:1}"
-  final_dir="$package_name"
-  final_path="$DEST_DIR/$prefix/$middle/$final_dir"
+  first_two="${padded_name:0:2}"
+  third="${padded_name:2:1}"
+
+  if [[ "$third" == "_" || ${#package_name} -lt 4 ]]; then
+    middle="_$third"
+  else
+    middle="${third}_"
+  fi
+
+  final_path="$DEST_DIR/$first_two/$middle/$package_name"
 
   mkdir -p "$final_path"
 
-  # Monta JSON para index
+  # index.json
   new_entry=$(jq -n \
     --arg name "$package_name" \
     --arg version "$version" \
@@ -41,7 +50,7 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
     echo "[$new_entry]" > "$index_file"
   fi
 
-  # Cria ou atualiza o arquivo metadata.json
+  # metadata.json
   metadata_file="$final_path/metadata.json"
   jq -n \
     --arg name "$package_name" \
@@ -51,7 +60,6 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
     '{name: $name, author: $author, homepage: $homepage, latest: $latest}' \
     > "$metadata_file"
 
-  # Move o pacote
   mv "$filepath" "$final_path/$filename"
 
   echo "Movido e indexado: $filename -> $final_path/$filename"
