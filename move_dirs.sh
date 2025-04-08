@@ -25,14 +25,14 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
 
   mkdir -p "$final_path"
 
-  # Monta JSON
+  # Monta JSON para index
   new_entry=$(jq -n \
     --arg name "$package_name" \
     --arg version "$version" \
-    --arg repository "https://github.com/lowcarboncode/phlow" \
+    --arg repository "https://github.com/lowcarboncode/phlow-packages" \
     '{name: $name, version: $version, repository: $repository}')
 
-  index_file="$final_path/index"
+  index_file="$final_path/index.json"
 
   if [ -f "$index_file" ]; then
     tmp=$(mktemp)
@@ -41,6 +41,17 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
     echo "[$new_entry]" > "$index_file"
   fi
 
+  # Cria ou atualiza o arquivo metadata.json
+  metadata_file="$final_path/metadata.json"
+  jq -n \
+    --arg name "$package_name" \
+    --arg latest "$version" \
+    --arg author "Philippe Assis <codephilippe@gmail.com>" \
+    --arg homepage "phlow.dev" \
+    '{name: $name, author: $author, homepage: $homepage, latest: $latest}' \
+    > "$metadata_file"
+
+  # Move o pacote
   mv "$filepath" "$final_path/$filename"
 
   echo "Movido e indexado: $filename -> $final_path/$filename"
