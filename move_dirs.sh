@@ -15,14 +15,11 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
   package_name="${base_name%-*}"
   version="${base_name##*-}"
 
-  # Garante no mínimo 4 caracteres preenchendo com "_"
-  padded_name="$package_name"
-  while [ ${#padded_name} -lt 4 ]; do
-    padded_name="${padded_name}_"
-  done
+  # Padroniza para no mínimo 4 caracteres
+  padded=$(printf "%-4s" "$package_name" | tr ' ' '_')
 
-  prefix="${padded_name:0:2}"
-  middle="${padded_name: -2}"  # últimos dois caracteres
+  prefix="${padded:0:2}"
+  middle="${padded:2:2}"
 
   final_path="$DEST_DIR/$prefix/$middle/$package_name"
 
@@ -54,7 +51,7 @@ for filepath in "$RAW_DIR"/*.tar.gz; do
     '{name: $name, author: $author, homepage: $homepage, latest: $latest}' \
     > "$metadata_file"
 
-  # Move o arquivo
+  # Move o tar.gz
   mv "$filepath" "$final_path/$filename"
 
   echo "Movido e indexado: $filename -> $final_path/$filename"
