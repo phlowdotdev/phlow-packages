@@ -9,34 +9,39 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Execute script
+        
+      - name: List
         run: |
-          chmod +x ./seu-script.sh
-          ./seu-script.sh
+          ls -la
+        
 
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+    #   - name: Install jq
+    #     run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Commit changes
-        run: |
-          git add .
-          git commit -m "chore: process packages" || echo "No changes to commit"
+    #   - name: Execute script
+    #     run: |
+    #       chmod +x ./seu-script.sh
+    #       ./seu-script.sh
 
-      - name: Push changes
-        run: |
-          git push origin HEAD
+    #   - name: Configure Git
+    #     run: |
+    #       git config user.name "github-actions[bot]"
+    #       git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          branch: ${{ github.ref_name }}
-          title: "Add packages - ${{ github.ref_name }}"
-          base: main
-          body: "This PR adds packages from the branch ${{ github.ref_name }}."
+    #   - name: Commit changes
+    #     run: |
+    #       git add .
+    #       git commit -m "chore: process packages" || echo "No changes to commit"
+
+    #   - name: Push changes
+    #     run: |
+    #       git push origin HEAD
+
+    #   - name: Create Pull Request
+    #     uses: peter-evans/create-pull-request@v5
+    #     with:
+    #       branch: ${{ github.ref_name }}
+    #       title: "Add packages - ${{ github.ref_name }}"
+    #       base: main
+    #       body: "This PR adds packages from the branch ${{ github.ref_name }}."
         
