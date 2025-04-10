@@ -1,13 +1,10 @@
 name: Process packages and create PR
 
-on:
-  push:
-    branches:
-      - 'add/**'
+on: create
 
 jobs:
   process-and-pr:
-    if: github.event.created
+    if: ${{ contains(github.ref, 'refs/heads/add/')  }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -42,3 +39,4 @@ jobs:
           title: "Add packages - ${{ github.ref_name }}"
           base: main
           body: "This PR adds packages from the branch ${{ github.ref_name }}."
+        
