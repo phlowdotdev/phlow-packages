@@ -1,0 +1,44 @@
+name: Processar pacotes e abrir PR
+
+on:
+  push:
+    branches:
+      - 'add/**'
+
+jobs:
+  process-and-pr:
+    if: github.event.created
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Instalar jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Executar script de processamento
+        run: |
+          chmod +x ./seu-script.sh
+          ./seu-script.sh
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit das mudanças
+        run: |
+          git add .
+          git commit -m "chore: process packages" || echo "Nada para commitar"
+
+      - name: Push da branch modificada
+        run: |
+          git push origin HEAD
+
+      - name: Criar Pull Request para main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: ${{ github.ref_name }}
+          title: "Add packages - ${{ github.ref_name }}"
+          base: main
+          body: "Este PR adiciona pacotes processados a partir da branch `${{ github.ref_name }}`."
