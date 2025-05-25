@@ -1,0 +1,12 @@
+[
+  {
+    "name": "log-0.0.1",
+    "version": "darwin",
+    "repository": "https://github.com/lowcarboncode/phlow-packages"
+  },
+  {
+    "name": "log-0.0.1",
+    "version": "linux_gnu",
+    "repository": "https://github.com/lowcarboncode/phlow-packages"
+  }
+]
